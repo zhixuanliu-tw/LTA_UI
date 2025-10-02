@@ -18,34 +18,42 @@ import { CommonModule } from '@angular/common';
             <h4>Transaction Summary</h4>
             <div class="summary-grid">
               <div class="summary-item">
-                <span class="label">Transaction ID:</span>
-                <span class="value">{{transaction?.id}}</span>
+                <span class="label">Vehicle Registration:</span>
+                <span class="value vehicle-plate">{{transaction?.vehiclePlate}}</span>
               </div>
               <div class="summary-item">
-                <span class="label">Date:</span>
-                <span class="value">{{formatDate(transaction?.date)}}</span>
+                <span class="label">Vehicle Type:</span>
+                <span class="value">{{transaction?.vehicleType}}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Effective Ownership Date:</span>
+                <span class="value">{{formatDate(transaction?.effectiveOwnershipDate)}}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Deregistration Date:</span>
+                <span class="value">{{formatDate(transaction?.deregistrationDate)}}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Deregistration Reason:</span>
+                <span class="value">{{transaction?.deregistrationReason}}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Disposal Deadline:</span>
+                <span class="value">{{formatDate(transaction?.disposalDeadline)}}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Account Type:</span>
+                <span class="value">{{transaction?.accountType}}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Owner ID:</span>
+                <span class="value owner-id">{{transaction?.ownerId}}</span>
               </div>
               <div class="summary-item">
                 <span class="label">Fraud Score:</span>
                 <span class="value fraud-score" [ngClass]="getFraudScoreClass(transaction?.fraudScore)">
                   {{(transaction?.fraudScore * 100).toFixed(0)}}%
                 </span>
-              </div>
-              <div class="summary-item">
-                <span class="label">Vehicle Plate:</span>
-                <span class="value vehicle-plate">{{transaction?.vehiclePlate}}</span>
-              </div>
-              <div class="summary-item">
-                <span class="label">NRIC:</span>
-                <span class="value nric">{{transaction?.nric}}</span>
-              </div>
-              <div class="summary-item">
-                <span class="label">Name:</span>
-                <span class="value">{{transaction?.name}}</span>
-              </div>
-              <div class="summary-item full-width">
-                <span class="label">Address:</span>
-                <span class="value">{{transaction?.address}}</span>
               </div>
             </div>
           </div>
@@ -227,7 +235,7 @@ import { CommonModule } from '@angular/common';
     }
 
     .vehicle-plate,
-    .nric {
+    .owner-id {
       font-family: 'Courier New', monospace;
     }
 
@@ -380,9 +388,9 @@ export class WhyFlaggedPanelComponent {
     if (!this.transaction) return '';
     
     const explanations: any = {
-      'Frequent Transfers Before COE Expiry': `This NRIC (${this.transaction.nric}) has deregistered ${this.transaction.numberOfTransfers} vehicles in the last 2 months, ${this.transaction.numberOfTransfers - 1} of which were transferred right before COE expiry. This pattern suggests potential COE arbitrage activities.`,
+      'Frequent Transfers Before COE Expiry': `This Owner ID (${this.transaction.ownerId}) has deregistered multiple vehicles in the last 2 months, most of which were transferred right before COE expiry. This pattern suggests potential COE arbitrage activities.`,
       'Late Disposal After Deregistration': `Vehicle ${this.transaction.vehiclePlate} was disposed ${this.getDaysAfterDeregistration()} days after deregistration, which exceeds the normal disposal timeframe and may indicate deliberate delay tactics.`,
-      'Commercial Vehicle Under Residential Address': `This commercial vehicle (${this.transaction.vehiclePlate}) is registered under a residential address (${this.transaction.address}), which may violate commercial vehicle regulations and suggest fraudulent registration practices.`
+      'Commercial Vehicle Under Residential Address': `This commercial vehicle (${this.transaction.vehiclePlate}) is registered under suspicious circumstances, which may violate commercial vehicle regulations and suggest fraudulent registration practices.`
     };
 
     return explanations[this.transaction.flaggingReason] || 'Suspicious transaction pattern detected by AI fraud detection system.';
@@ -395,8 +403,8 @@ export class WhyFlaggedPanelComponent {
   getRiskFactors(): string {
     if (!this.transaction) return '';
     const factors = [];
-    if (this.transaction.numberOfTransfers > 3) factors.push('High transfer frequency');
-    if (this.transaction.insuranceStatus === 'Expired') factors.push('Insurance issues');
+    if (this.transaction.deregistrationReason === 'Direct Exported') factors.push('Export-related deregistration');
+    if (this.transaction.accountType === 'Company') factors.push('Corporate account');
     if (this.transaction.fraudScore > 0.8) factors.push('High AI confidence score');
     return factors.join(', ') || 'Standard risk profile';
   }

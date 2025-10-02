@@ -5,7 +5,6 @@ import { HeaderComponent } from '../header/header.component';
 import { FilterPanelComponent } from '../filter-panel/filter-panel.component';
 import { ChartsComponent } from '../charts/charts.component';
 import { TransactionTableComponent } from '../transaction-table/transaction-table.component';
-import { ChatbotComponent } from '../chatbot/chatbot.component';
 import { WhyFlaggedPanelComponent } from '../why-flagged-panel/why-flagged-panel.component';
 
 @Component({
@@ -18,21 +17,15 @@ import { WhyFlaggedPanelComponent } from '../why-flagged-panel/why-flagged-panel
     FilterPanelComponent, 
     ChartsComponent, 
     TransactionTableComponent, 
-    ChatbotComponent,
     WhyFlaggedPanelComponent
   ],
   template: `
     <app-header></app-header>
     
     <main class="main-content">
-      <!-- Wireframe 1: Default View -->
-      <div *ngIf="currentView === 'default'" class="upload-section">
+      <!-- Upload Section - Always visible -->
+      <div class="upload-section">
         <div class="upload-container">
-          <div class="upload-instructions">
-            <h2>Upload dataset for fraud analysis</h2>
-            <p>Upload your CSV file containing vehicle deregistration transactions for intelligent fraud detection analysis.</p>
-          </div>
-          
           <div class="upload-area" (click)="triggerFileInput()">
             <input 
               #fileInput 
@@ -41,25 +34,24 @@ import { WhyFlaggedPanelComponent } from '../why-flagged-panel/why-flagged-panel
               style="display: none" 
               (change)="onFileSelected($event)">
             <div class="upload-icon">📁</div>
-            <p>Click to upload CSV file</p>
+            <p>Upload CSV file for fraud analysis</p>
             <button class="upload-btn">Choose File</button>
+          </div>
+          <div class="upload-status" *ngIf="uploadedFileName">
+            <span class="status-icon">✅</span>
+            <span class="status-text">{{uploadedFileName}} uploaded successfully</span>
           </div>
         </div>
       </div>
 
-      <!-- Wireframes 2-6: After Upload Views -->
-      <div *ngIf="currentView !== 'default'">
-        <div class="back-to-upload">
-          <button class="back-btn" (click)="goBackToUpload()">
-            ← Back to Upload
-          </button>
-        </div>
-        
-        <app-filter-panel 
-          [filters]="filters"
-          (filtersChanged)="onFiltersChanged($event)">
-        </app-filter-panel>
-        
+      <!-- Filter Panel - Always visible -->
+      <app-filter-panel 
+        [filters]="filters"
+        (filtersChanged)="onFiltersChanged($event)">
+      </app-filter-panel>
+      
+      <!-- Charts and Table - Only visible after upload -->
+      <div *ngIf="hasData">
         <app-charts 
           [chartData]="filteredChartData">
         </app-charts>
@@ -77,11 +69,16 @@ import { WhyFlaggedPanelComponent } from '../why-flagged-panel/why-flagged-panel
           (close)="onWhyFlaggedClosed()">
         </app-why-flagged-panel>
       </div>
+
+      <!-- No Data Message -->
+      <div *ngIf="!hasData" class="no-data-message">
+        <div class="no-data-content">
+          <div class="no-data-icon">📊</div>
+          <h3>No Data Available</h3>
+          <p>Please upload a CSV file to view fraud analysis results</p>
+        </div>
+      </div>
     </main>
-    
-    <app-chatbot 
-      [isVisible]="currentView !== 'default'">
-    </app-chatbot>
   `,
   styles: [`
     .main-content {
@@ -90,66 +87,54 @@ import { WhyFlaggedPanelComponent } from '../why-flagged-panel/why-flagged-panel
     }
 
     .upload-section {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: calc(100vh - 200px);
-      padding: 40px 20px;
+      background: #f8f9fa;
+      padding: 2rem 0;
+      border-bottom: 1px solid #e9ecef;
     }
 
     .upload-container {
-      text-align: center;
-      max-width: 600px;
-      width: 100%;
-    }
-
-    .upload-instructions h2 {
-      color: #222349;
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      font-weight: 600;
-    }
-
-    .upload-instructions p {
-      color: #666;
-      font-size: 1.1rem;
-      margin-bottom: 3rem;
-      line-height: 1.6;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
     }
 
     .upload-area {
-      border: 3px dashed #FEC900;
-      border-radius: 12px;
-      padding: 60px 40px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border: 2px dashed #FEC900;
+      border-radius: 8px;
+      padding: 1rem 2rem;
       cursor: pointer;
       transition: all 0.3s ease;
-      background: #fefefe;
+      background: white;
     }
 
     .upload-area:hover {
       border-color: #222349;
-      background: #f8f9fa;
-      transform: translateY(-2px);
+      background: #fefefe;
     }
 
     .upload-icon {
-      font-size: 4rem;
-      margin-bottom: 1rem;
+      font-size: 2rem;
     }
 
     .upload-area p {
       color: #666;
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
+      font-size: 1rem;
+      margin: 0;
     }
 
     .upload-btn {
       background: #FEC900;
       color: #222349;
       border: none;
-      padding: 12px 32px;
-      border-radius: 6px;
-      font-size: 1.1rem;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -158,126 +143,145 @@ import { WhyFlaggedPanelComponent } from '../why-flagged-panel/why-flagged-panel
     .upload-btn:hover {
       background: #222349;
       color: #FEC900;
-      transform: translateY(-1px);
     }
 
-    .back-to-upload {
-      padding: 1rem 2rem;
-      background: #f8f9fa;
-      border-bottom: 1px solid #e9ecef;
-    }
-
-    .back-btn {
-      background: transparent;
-      color: #222349;
-      border: 1px solid #222349;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.3s ease;
+    .upload-status {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 0.5rem;
+      background: #d4edda;
+      color: #155724;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #c3e6cb;
     }
 
-    .back-btn:hover {
-      background: #222349;
-      color: white;
+    .status-icon {
+      font-size: 1.2rem;
+    }
+
+    .status-text {
+      font-weight: 500;
+    }
+
+    .no-data-message {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 400px;
+      padding: 2rem;
+    }
+
+    .no-data-content {
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .no-data-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .no-data-content h3 {
+      color: #222349;
+      font-size: 1.5rem;
+      margin: 0 0 1rem 0;
+    }
+
+    .no-data-content p {
+      color: #666;
+      font-size: 1rem;
+      margin: 0;
     }
 
     @media (max-width: 768px) {
-      .back-to-upload {
-        padding: 1rem;
-      }
-
-      .upload-instructions h2 {
-        font-size: 2rem;
+      .upload-container {
+        padding: 0 1rem;
+        flex-direction: column;
+        align-items: stretch;
       }
 
       .upload-area {
-        padding: 40px 20px;
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
       }
     }
   `]
 })
 export class HomeComponent {
-  currentView: string = 'default';
+  hasData: boolean = false;
+  uploadedFileName: string = '';
   
   selectedTransaction: any = null;
   highlightedRow: number = -1;
   
   filters = {
-    dateRange: 'all',
-    vehicleClass: 'all',
-    transactionType: 'all',
-    flaggingReason: 'all'
+    startDate: '',
+    endDate: '',
+    vehicleType: 'all',
+    deregistrationReason: 'all',
+    accountType: 'all'
   };
 
   mockTransactions = [
     {
-      id: 'TXN001',
-      date: '2024-01-15',
-      fraudScore: 0.92,
-      nric: 'S12***67A',
-      name: 'John Lim',
-      address: '123 Marine Parade #05-01',
       vehiclePlate: 'SBA1234A',
-      vehicleClass: 'Cars',
+      vehicleType: 'Motor Car',
+      effectiveOwnershipDate: '2023-08-15',
       deregistrationDate: '2024-01-15',
-      coeExpiry: '2024-02-10',
-      insuranceStatus: 'Active',
-      numberOfTransfers: 5,
-      flaggingReason: 'Frequent Transfers Before COE Expiry',
-      caseStatus: 'Under Investigation'
+      deregistrationReason: 'Direct Exported',
+      disposalDeadline: '2024-02-15',
+      accountType: 'Singapore NRIC',
+      ownerId: 'S12***67A',
+      fraudScore: 0.92,
+      flaggingReason: 'Frequent Transfers Before COE Expiry'
     },
     {
-      id: 'TXN002',
-      date: '2024-01-14',
-      fraudScore: 0.78,
-      nric: 'S34***89B',
-      name: 'Mary Tan',
-      address: '456 Orchard Road #12-34',
       vehiclePlate: 'SBB5678B',
-      vehicleClass: 'Motorcycles',
+      vehicleType: 'Motorcycle',
+      effectiveOwnershipDate: '2023-09-20',
       deregistrationDate: '2024-01-14',
-      coeExpiry: '2024-03-01',
-      insuranceStatus: 'Expired',
-      numberOfTransfers: 3,
-      flaggingReason: 'Late Disposal After Deregistration',
-      caseStatus: 'Pending Review'
+      deregistrationReason: 'Scrapped',
+      disposalDeadline: '2024-02-14',
+      accountType: 'Company',
+      ownerId: 'C34***89B',
+      fraudScore: 0.78,
+      flaggingReason: 'Late Disposal After Deregistration'
     },
     {
-      id: 'TXN003',
-      date: '2024-01-13',
-      fraudScore: 0.85,
-      nric: 'S56***12C',
-      name: 'David Wong',
-      address: '789 Residential Ave #03-45',
       vehiclePlate: 'SCC9012C',
-      vehicleClass: 'Lorries',
+      vehicleType: 'Lorry',
+      effectiveOwnershipDate: '2023-07-10',
       deregistrationDate: '2024-01-13',
-      coeExpiry: '2024-01-20',
-      insuranceStatus: 'Active',
-      numberOfTransfers: 8,
-      flaggingReason: 'Commercial Vehicle Under Residential Address',
-      caseStatus: 'High Priority'
+      deregistrationReason: 'Apply PARF',
+      disposalDeadline: '2024-02-13',
+      accountType: 'Business',
+      ownerId: 'B56***12C',
+      fraudScore: 0.85,
+      flaggingReason: 'Commercial Vehicle Under Residential Address'
     }
   ];
 
   filteredTransactions = [...this.mockTransactions];
 
   chartData = {
-    vehicleClass: [
-      { label: 'Cars', value: 45 },
-      { label: 'Motorcycles', value: 25 },
-      { label: 'Lorries', value: 30 }
+    monthlyTrends: [
+      { month: 'Jan', count: 45 },
+      { month: 'Feb', count: 52 },
+      { month: 'Mar', count: 38 },
+      { month: 'Apr', count: 61 },
+      { month: 'May', count: 47 },
+      { month: 'Jun', count: 55 },
+      { month: 'Jul', count: 42 },
+      { month: 'Aug', count: 58 },
+      { month: 'Sep', count: 49 }
     ],
-    flaggingReasons: [
-      { label: 'Frequent Transfers Before COE Expiry', value: 40 },
-      { label: 'Late Disposal After Deregistration', value: 25 },
-      { label: 'Commercial Vehicle Under Residential Address', value: 20 },
-      { label: 'Multiple Transfers Same NRIC', value: 15 }
+    accountTypes: [
+      { label: 'Singapore NRIC', value: 45 },
+      { label: 'Company', value: 30 },
+      { label: 'Business', value: 20 },
+      { label: 'Foreign Identification', value: 5 }
     ]
   };
 
@@ -291,17 +295,13 @@ export class HomeComponent {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      this.uploadedFileName = file.name;
       // Simulate file processing
       setTimeout(() => {
-        this.currentView = 'after-upload';
+        this.hasData = true;
+        this.applyFilters();
       }, 1000);
     }
-  }
-
-  goBackToUpload() {
-    this.currentView = 'default';
-    this.selectedTransaction = null;
-    this.highlightedRow = -1;
   }
 
   onFiltersChanged(newFilters: any) {
@@ -310,14 +310,35 @@ export class HomeComponent {
   }
 
   applyFilters() {
-    // Apply filters to transactions and chart data
+    if (!this.hasData) return;
+
+    // Apply filters to transactions
     this.filteredTransactions = this.mockTransactions.filter(transaction => {
-      if (this.filters.vehicleClass !== 'all' && transaction.vehicleClass !== this.filters.vehicleClass) {
+      // Date range filter
+      if (this.filters.startDate && this.filters.endDate) {
+        const transactionDate = new Date(transaction.effectiveOwnershipDate);
+        const startDate = new Date(this.filters.startDate);
+        const endDate = new Date(this.filters.endDate);
+        if (transactionDate < startDate || transactionDate > endDate) {
+          return false;
+        }
+      }
+
+      // Vehicle type filter
+      if (this.filters.vehicleType !== 'all' && transaction.vehicleType !== this.filters.vehicleType) {
         return false;
       }
-      if (this.filters.flaggingReason !== 'all' && transaction.flaggingReason !== this.filters.flaggingReason) {
+
+      // Deregistration reason filter
+      if (this.filters.deregistrationReason !== 'all' && transaction.deregistrationReason !== this.filters.deregistrationReason) {
         return false;
       }
+
+      // Account type filter
+      if (this.filters.accountType !== 'all' && transaction.accountType !== this.filters.accountType) {
+        return false;
+      }
+
       return true;
     });
 
@@ -326,23 +347,18 @@ export class HomeComponent {
   }
 
   updateChartData() {
-    // Recalculate chart data based on filtered transactions
-    const vehicleClassCounts: any = {};
-    const flaggingReasonCounts: any = {};
-
+    // Update account types chart based on filtered data
+    const accountTypeCounts: any = {};
+    
     this.filteredTransactions.forEach(transaction => {
-      vehicleClassCounts[transaction.vehicleClass] = (vehicleClassCounts[transaction.vehicleClass] || 0) + 1;
-      flaggingReasonCounts[transaction.flaggingReason] = (flaggingReasonCounts[transaction.flaggingReason] || 0) + 1;
+      accountTypeCounts[transaction.accountType] = (accountTypeCounts[transaction.accountType] || 0) + 1;
     });
 
     this.filteredChartData = {
-      vehicleClass: Object.keys(vehicleClassCounts).map(key => ({
+      ...this.chartData,
+      accountTypes: Object.keys(accountTypeCounts).map(key => ({
         label: key,
-        value: vehicleClassCounts[key]
-      })),
-      flaggingReasons: Object.keys(flaggingReasonCounts).map(key => ({
-        label: key,
-        value: flaggingReasonCounts[key]
+        value: accountTypeCounts[key]
       }))
     };
   }

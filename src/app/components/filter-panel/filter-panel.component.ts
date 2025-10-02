@@ -12,62 +12,74 @@ import { FormsModule } from '@angular/forms';
         <h3 class="filter-title">Filter Transactions</h3>
         
         <div class="filter-grid">
-          <div class="filter-group">
-            <label for="dateRange">Date Range</label>
-            <select 
-              id="dateRange"
-              [(ngModel)]="filters.dateRange"
-              (change)="onFilterChange()"
-              class="filter-select">
-              <option value="all">All Dates</option>
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="quarter">This Quarter</option>
-            </select>
+          <div class="filter-group date-range-group">
+            <div class="date-range-inputs">
+              <div class="date-input-wrapper">
+                <label for="startDate" class="date-label">Start Date</label>
+                <input 
+                  id="startDate"
+                  type="date"
+                  [(ngModel)]="filters.startDate"
+                  (change)="onFilterChange()"
+                  class="date-input">
+              </div>
+              <div class="date-input-wrapper">
+                <label for="endDate" class="date-label">End Date</label>
+                <input 
+                  id="endDate"
+                  type="date"
+                  [(ngModel)]="filters.endDate"
+                  (change)="onFilterChange()"
+                  class="date-input">
+              </div>
+            </div>
           </div>
 
           <div class="filter-group">
-            <label for="vehicleClass">Vehicle Class</label>
+            <label for="vehicleType">Vehicle Type</label>
             <select 
-              id="vehicleClass"
-              [(ngModel)]="filters.vehicleClass"
-              (change)="onFilterChange()"
-              class="filter-select">
-              <option value="all">All Classes</option>
-              <option value="Cars">Cars</option>
-              <option value="Motorcycles">Motorcycles</option>
-              <option value="Lorries">Lorries</option>
-              <option value="Buses">Buses</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label for="transactionType">Transaction Type</label>
-            <select 
-              id="transactionType"
-              [(ngModel)]="filters.transactionType"
+              id="vehicleType"
+              [(ngModel)]="filters.vehicleType"
               (change)="onFilterChange()"
               class="filter-select">
               <option value="all">All Types</option>
-              <option value="deregistration">Deregistration</option>
-              <option value="transfer">Vehicle Transfer</option>
-              <option value="disposal">Disposal</option>
+              <option value="Motor Car">Motor Car</option>
+              <option value="Taxi">Taxi</option>
+              <option value="Scooter">Scooter</option>
+              <option value="Bus">Bus</option>
+              <option value="Lorry">Lorry</option>
+              <option value="Motorcycle">Motorcycle</option>
             </select>
           </div>
 
           <div class="filter-group">
-            <label for="flaggingReason">Flagging Reason</label>
+            <label for="deregistrationReason">Deregistration Reason</label>
             <select 
-              id="flaggingReason"
-              [(ngModel)]="filters.flaggingReason"
+              id="deregistrationReason"
+              [(ngModel)]="filters.deregistrationReason"
               (change)="onFilterChange()"
               class="filter-select">
               <option value="all">All Reasons</option>
-              <option value="Frequent Transfers Before COE Expiry">Frequent Transfers Before COE Expiry</option>
-              <option value="Late Disposal After Deregistration">Late Disposal After Deregistration</option>
-              <option value="Commercial Vehicle Under Residential Address">Commercial Vehicle Under Residential Address</option>
-              <option value="Multiple Transfers Same NRIC">Multiple Transfers Same NRIC</option>
+              <option value="Direct Exported">Direct Exported</option>
+              <option value="Export Zone">Export Zone</option>
+              <option value="Scrapped">Scrapped</option>
+              <option value="Apply PARF">Apply PARF</option>
+              <option value="Stolen">Stolen</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="accountType">Account Type</label>
+            <select 
+              id="accountType"
+              [(ngModel)]="filters.accountType"
+              (change)="onFilterChange()"
+              class="filter-select">
+              <option value="all">All Types</option>
+              <option value="Company">Company</option>
+              <option value="Business">Business</option>
+              <option value="Singapore NRIC">Singapore NRIC</option>
+              <option value="Foreign Identification">Foreign Identification</option>
             </select>
           </div>
         </div>
@@ -77,7 +89,7 @@ import { FormsModule } from '@angular/forms';
             Clear All Filters
           </button>
           <div class="results-count">
-            <span class="count-text">Showing filtered results</span>
+            <span class="count-text">Use filters to refine your search</span>
           </div>
         </div>
       </div>
@@ -105,7 +117,7 @@ import { FormsModule } from '@angular/forms';
 
     .filter-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: 2fr 1fr 1fr 1fr;
       gap: 1.5rem;
       margin-bottom: 1.5rem;
     }
@@ -120,6 +132,43 @@ import { FormsModule } from '@angular/forms';
       font-weight: 600;
       font-size: 0.9rem;
       margin-bottom: 0.5rem;
+    }
+
+    .date-range-group {
+      grid-column: span 1;
+    }
+
+    .date-range-inputs {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .date-input-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .date-label {
+      color: #666;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .date-input {
+      padding: 10px 12px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      background: white;
+      transition: all 0.3s ease;
+    }
+
+    .date-input:focus {
+      outline: none;
+      border-color: #FEC900;
+      box-shadow: 0 0 0 2px rgba(254, 201, 0, 0.2);
     }
 
     .filter-select {
@@ -138,7 +187,8 @@ import { FormsModule } from '@angular/forms';
       box-shadow: 0 0 0 2px rgba(254, 201, 0, 0.2);
     }
 
-    .filter-select:hover {
+    .filter-select:hover,
+    .date-input:hover {
       border-color: #222349;
     }
 
@@ -176,6 +226,17 @@ import { FormsModule } from '@angular/forms';
       font-size: 0.9rem;
     }
 
+    @media (max-width: 1200px) {
+      .filter-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      .date-range-group {
+        grid-column: span 2;
+      }
+    }
+
     @media (max-width: 768px) {
       .filter-container {
         padding: 0 1rem;
@@ -184,6 +245,15 @@ import { FormsModule } from '@angular/forms';
       .filter-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
+      }
+
+      .date-range-group {
+        grid-column: span 1;
+      }
+
+      .date-range-inputs {
+        flex-direction: column;
+        gap: 0.5rem;
       }
 
       .filter-actions {
@@ -209,10 +279,11 @@ export class FilterPanelComponent {
 
   clearFilters() {
     this.filters = {
-      dateRange: 'all',
-      vehicleClass: 'all',
-      transactionType: 'all',
-      flaggingReason: 'all'
+      startDate: '',
+      endDate: '',
+      vehicleType: 'all',
+      deregistrationReason: 'all',
+      accountType: 'all'
     };
     this.filtersChanged.emit(this.filters);
   }

@@ -17,6 +17,10 @@ import { CommonModule } from '@angular/common';
             <span class="stats-item">
               <strong>{{getHighRiskCount()}}</strong> high risk
             </span>
+            <button class="download-btn" (click)="downloadCSV()" *ngIf="transactions.length > 0">
+              <span class="download-icon">📥</span>
+              Download CSV
+            </button>
           </div>
         </div>
         
@@ -24,21 +28,16 @@ import { CommonModule } from '@angular/common';
           <table class="transactions-table">
             <thead>
               <tr>
-                <th>Transaction ID</th>
-                <th>Date</th>
-                <th>Fraud Score</th>
-                <th>NRIC</th>
-                <th>Name</th>
-                <th>Address</th>
-                <th>Vehicle Plate</th>
-                <th>Vehicle Class</th>
+                <th>Vehicle Registration Number</th>
+                <th>Vehicle Type</th>
+                <th>Effective Ownership Date</th>
                 <th>Deregistration Date</th>
-                <th>COE Expiry</th>
-                <th>Insurance Status</th>
-                <th>Number of Transfers</th>
-                <th>Flagging Reason</th>
-                <th>Case Status</th>
-                <th>Actions</th>
+                <th>Deregistration Reason</th>
+                <th>Disposal Deadline</th>
+                <th>Account Type</th>
+                <th>Owner ID</th>
+                <th>Fraud Score</th>
+                <th>Remarks</th>
               </tr>
             </thead>
             <tbody>
@@ -46,33 +45,20 @@ import { CommonModule } from '@angular/common';
                 *ngFor="let transaction of transactions; let i = index"
                 [class.highlighted]="highlightedRow === i"
                 class="transaction-row">
-                <td class="transaction-id">{{transaction.id}}</td>
-                <td>{{formatDate(transaction.date)}}</td>
+                <td class="vehicle-plate">{{transaction.vehiclePlate}}</td>
+                <td>{{transaction.vehicleType}}</td>
+                <td>{{formatDate(transaction.effectiveOwnershipDate)}}</td>
+                <td>{{formatDate(transaction.deregistrationDate)}}</td>
+                <td class="deregistration-reason">{{transaction.deregistrationReason}}</td>
+                <td>{{formatDate(transaction.disposalDeadline)}}</td>
+                <td class="account-type">{{transaction.accountType}}</td>
+                <td class="owner-id">{{transaction.ownerId}}</td>
                 <td>
                   <span class="fraud-score" [ngClass]="getFraudScoreClass(transaction.fraudScore)">
                     {{(transaction.fraudScore * 100).toFixed(0)}}%
                   </span>
                 </td>
-                <td class="nric">{{transaction.nric}}</td>
-                <td class="name">{{transaction.name}}</td>
-                <td class="address">{{transaction.address}}</td>
-                <td class="vehicle-plate">{{transaction.vehiclePlate}}</td>
-                <td>{{transaction.vehicleClass}}</td>
-                <td>{{formatDate(transaction.deregistrationDate)}}</td>
-                <td>{{formatDate(transaction.coeExpiry)}}</td>
-                <td>
-                  <span class="insurance-status" [ngClass]="getInsuranceStatusClass(transaction.insuranceStatus)">
-                    {{transaction.insuranceStatus}}
-                  </span>
-                </td>
-                <td class="transfers-count">{{transaction.numberOfTransfers}}</td>
-                <td class="flagging-reason">{{transaction.flaggingReason}}</td>
-                <td>
-                  <span class="case-status" [ngClass]="getCaseStatusClass(transaction.caseStatus)">
-                    {{transaction.caseStatus}}
-                  </span>
-                </td>
-                <td class="actions">
+                <td class="remarks">
                   <button 
                     class="why-flagged-btn"
                     [class.highlighted-btn]="highlightedRow === i"
@@ -126,6 +112,30 @@ import { CommonModule } from '@angular/common';
     .stats-item strong {
       color: #222349;
       font-size: 1.1rem;
+    }
+
+    .download-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .download-btn:hover {
+      background: #218838;
+      transform: translateY(-1px);
+    }
+
+    .download-icon {
+      font-size: 1rem;
     }
 
     .table-wrapper {
@@ -219,59 +229,20 @@ import { CommonModule } from '@angular/common';
       color: #222349;
     }
 
-    .insurance-status {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .insurance-status.active {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .insurance-status.expired {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
-    .transfers-count {
-      text-align: center;
-      font-weight: 600;
-      color: #222349;
-    }
-
-    .flagging-reason {
-      max-width: 250px;
+    .deregistration-reason,
+    .account-type {
+      max-width: 150px;
       font-size: 0.8rem;
       line-height: 1.4;
     }
 
-    .case-status {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.8rem;
+    .owner-id {
+      font-family: 'Courier New', monospace;
       font-weight: 600;
-      white-space: nowrap;
+      color: #222349;
     }
 
-    .case-status.under-investigation {
-      background: #fff3cd;
-      color: #856404;
-    }
-
-    .case-status.pending-review {
-      background: #d1ecf1;
-      color: #0c5460;
-    }
-
-    .case-status.high-priority {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
-    .actions {
+    .remarks {
       text-align: center;
     }
 
@@ -318,6 +289,12 @@ import { CommonModule } from '@angular/common';
 
       .table-stats {
         gap: 1rem;
+      }
+
+      .download-btn {
+        width: 100%;
+        justify-content: center;
+        margin-top: 1rem;
       }
 
       .transactions-table {
@@ -370,5 +347,66 @@ export class TransactionTableComponent implements OnChanges {
 
   onWhyFlaggedClick(transaction: any) {
     this.whyFlaggedClicked.emit(transaction);
+  }
+
+  downloadCSV() {
+    const headers = [
+      'Vehicle Registration Number',
+      'Vehicle Type',
+      'Effective Ownership Date',
+      'Deregistration Date',
+      'Deregistration Reason',
+      'Disposal Deadline',
+      'Account Type',
+      'Owner ID',
+      'Fraud Score (%)',
+      'Flagging Reason',
+      'Fraud Explanation'
+    ];
+
+    const csvData = this.transactions.map(transaction => [
+      transaction.vehiclePlate,
+      transaction.vehicleType,
+      this.formatDate(transaction.effectiveOwnershipDate),
+      this.formatDate(transaction.deregistrationDate),
+      transaction.deregistrationReason,
+      this.formatDate(transaction.disposalDeadline),
+      transaction.accountType,
+      transaction.ownerId,
+      (transaction.fraudScore * 100).toFixed(0) + '%',
+      transaction.flaggingReason,
+      this.getFraudExplanation(transaction)
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `fraudulent_transactions_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  private getFraudExplanation(transaction: any): string {
+    const explanations: any = {
+      'Frequent Transfers Before COE Expiry': `This Owner ID (${transaction.ownerId}) has deregistered multiple vehicles in the last 2 months, most of which were transferred right before COE expiry. This pattern suggests potential COE arbitrage activities.`,
+      'Late Disposal After Deregistration': `Vehicle ${transaction.vehiclePlate} was disposed ${this.getDaysAfterDeregistration(transaction)} days after deregistration, which exceeds the normal disposal timeframe and may indicate deliberate delay tactics.`,
+      'Commercial Vehicle Under Residential Address': `This commercial vehicle (${transaction.vehiclePlate}) is registered under suspicious circumstances, which may violate commercial vehicle regulations and suggest fraudulent registration practices.`
+    };
+
+    return explanations[transaction.flaggingReason] || 'Suspicious transaction pattern detected by AI fraud detection system.';
+  }
+
+  private getDaysAfterDeregistration(transaction: any): number {
+    const deregDate = new Date(transaction.deregistrationDate);
+    const today = new Date();
+    return Math.floor((today.getTime() - deregDate.getTime()) / (1000 * 3600 * 24));
   }
 }

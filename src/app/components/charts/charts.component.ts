@@ -9,67 +9,56 @@ import { CommonModule } from '@angular/common';
     <div class="charts-section">
       <div class="charts-container">
         <div class="charts-header">
-          <h3>Fraud Detection Summary</h3>
-          <p>Overview of flagged transactions and suspicious patterns</p>
+          <h3>Fraud Detection Analytics</h3>
+          <p>Monthly trends and account type distribution of suspicious transactions</p>
         </div>
         
         <div class="charts-grid">
-          <!-- Vehicle Class Distribution Chart -->
+          <!-- Monthly Trends Bar Chart -->
           <div class="chart-card">
             <div class="chart-header">
-              <h4>Flagged Transactions by Vehicle Class</h4>
+              <h4>Monthly Suspicious Transaction Trends (2025)</h4>
             </div>
-            <div class="pie-chart-container">
-              <div class="pie-chart" #vehicleChart>
-                <div class="chart-center">
-                  <span class="chart-total">{{getTotalVehicles()}}</span>
-                  <span class="chart-label">Total</span>
+            <div class="bar-chart-container">
+              <div class="bar-chart">
+                <div class="chart-bars">
+                  <div 
+                    *ngFor="let item of chartData.monthlyTrends; let i = index" 
+                    class="bar-wrapper">
+                    <div 
+                      class="bar" 
+                      [style.height.%]="getBarHeight(item.count)"
+                      [style.background-color]="getBarColor(i)">
+                    </div>
+                    <span class="bar-value">{{item.count}}</span>
+                    <span class="bar-label">{{item.month}}</span>
+                  </div>
                 </div>
-                <svg viewBox="0 0 200 200" class="pie-svg">
-                  <circle
-                    *ngFor="let segment of getVehicleSegments(); let i = index"
-                    [attr.cx]="100"
-                    [attr.cy]="100"
-                    [attr.r]="80"
-                    [attr.stroke]="getColor(i)"
-                    [attr.stroke-width]="20"
-                    [attr.stroke-dasharray]="segment.circumference + ' ' + (503 - segment.circumference)"
-                    [attr.stroke-dashoffset]="segment.offset"
-                    fill="transparent"
-                    [attr.transform]="'rotate(-90 100 100)'"
-                  />
-                </svg>
-              </div>
-              <div class="chart-legend">
-                <div 
-                  *ngFor="let item of chartData.vehicleClass; let i = index" 
-                  class="legend-item">
-                  <span class="legend-color" [style.background-color]="getColor(i)"></span>
-                  <span class="legend-label">{{item.label}}</span>
-                  <span class="legend-value">{{item.value}}</span>
+                <div class="chart-y-axis">
+                  <div class="y-axis-label" *ngFor="let tick of getYAxisTicks()">{{tick}}</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Flagging Reasons Distribution Chart -->
+          <!-- Account Types Pie Chart -->
           <div class="chart-card">
             <div class="chart-header">
-              <h4>Suspicious Reason Category Distribution</h4>
+              <h4>Suspicious Transactions by Account Type</h4>
             </div>
             <div class="pie-chart-container">
               <div class="pie-chart">
                 <div class="chart-center">
-                  <span class="chart-total">{{getTotalReasons()}}</span>
-                  <span class="chart-label">Cases</span>
+                  <span class="chart-total">{{getTotalAccountTypes()}}</span>
+                  <span class="chart-label">Total</span>
                 </div>
                 <svg viewBox="0 0 200 200" class="pie-svg">
                   <circle
-                    *ngFor="let segment of getReasonSegments(); let i = index"
+                    *ngFor="let segment of getAccountTypeSegments(); let i = index"
                     [attr.cx]="100"
                     [attr.cy]="100"
                     [attr.r]="80"
-                    [attr.stroke]="getReasonColor(i)"
+                    [attr.stroke]="getAccountTypeColor(i)"
                     [attr.stroke-width]="20"
                     [attr.stroke-dasharray]="segment.circumference + ' ' + (503 - segment.circumference)"
                     [attr.stroke-dashoffset]="segment.offset"
@@ -80,9 +69,9 @@ import { CommonModule } from '@angular/common';
               </div>
               <div class="chart-legend">
                 <div 
-                  *ngFor="let item of chartData.flaggingReasons; let i = index" 
+                  *ngFor="let item of chartData.accountTypes; let i = index" 
                   class="legend-item">
-                  <span class="legend-color" [style.background-color]="getReasonColor(i)"></span>
+                  <span class="legend-color" [style.background-color]="getAccountTypeColor(i)"></span>
                   <span class="legend-label">{{item.label}}</span>
                   <span class="legend-value">{{item.value}}</span>
                 </div>
@@ -125,7 +114,7 @@ import { CommonModule } from '@angular/common';
 
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      grid-template-columns: 1fr 1fr;
       gap: 2rem;
     }
 
@@ -145,6 +134,83 @@ import { CommonModule } from '@angular/common';
       text-align: center;
     }
 
+    /* Bar Chart Styles */
+    .bar-chart-container {
+      height: 300px;
+      position: relative;
+    }
+
+    .bar-chart {
+      display: flex;
+      height: 100%;
+      position: relative;
+    }
+
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      flex: 1;
+      height: 250px;
+      padding: 0 20px 40px 40px;
+      position: relative;
+    }
+
+    .bar-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      max-width: 60px;
+    }
+
+    .bar {
+      width: 100%;
+      min-height: 4px;
+      border-radius: 4px 4px 0 0;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .bar:hover {
+      opacity: 0.8;
+      transform: translateY(-2px);
+    }
+
+    .bar-value {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #222349;
+      margin-top: 4px;
+    }
+
+    .bar-label {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    .chart-y-axis {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 250px;
+      width: 40px;
+      display: flex;
+      flex-direction: column-reverse;
+      justify-content: space-between;
+      padding: 0 0 40px 0;
+    }
+
+    .y-axis-label {
+      font-size: 0.7rem;
+      color: #666;
+      text-align: right;
+      padding-right: 8px;
+    }
+
+    /* Pie Chart Styles */
     .pie-chart-container {
       display: flex;
       align-items: center;
@@ -217,13 +283,15 @@ import { CommonModule } from '@angular/common';
       text-align: right;
     }
 
+    @media (max-width: 1200px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 768px) {
       .charts-container {
         padding: 0 1rem;
-      }
-
-      .charts-grid {
-        grid-template-columns: 1fr;
       }
 
       .pie-chart-container {
@@ -235,54 +303,58 @@ import { CommonModule } from '@angular/common';
         width: 100%;
         max-width: 300px;
       }
+
+      .bar-chart-container {
+        height: 250px;
+      }
+
+      .chart-bars {
+        height: 200px;
+        padding: 0 10px 30px 30px;
+      }
+
+      .chart-y-axis {
+        height: 200px;
+        width: 30px;
+      }
     }
   `]
 })
 export class ChartsComponent {
-  @Input() chartData: any = { vehicleClass: [], flaggingReasons: [] };
+  @Input() chartData: any = { monthlyTrends: [], accountTypes: [] };
 
-  colors = ['#222349', '#FEC900', '#28a745', '#dc3545', '#6f42c1', '#fd7e14'];
-  reasonColors = ['#e74c3c', '#f39c12', '#3498db', '#2ecc71', '#9b59b6', '#1abc9c'];
+  barColors = ['#222349', '#FEC900', '#28a745', '#dc3545', '#6f42c1', '#fd7e14', '#17a2b8', '#6c757d', '#343a40'];
+  accountTypeColors = ['#222349', '#FEC900', '#28a745', '#dc3545'];
 
-  getColor(index: number): string {
-    return this.colors[index % this.colors.length];
+  getBarColor(index: number): string {
+    return this.barColors[index % this.barColors.length];
   }
 
-  getReasonColor(index: number): string {
-    return this.reasonColors[index % this.reasonColors.length];
+  getAccountTypeColor(index: number): string {
+    return this.accountTypeColors[index % this.accountTypeColors.length];
   }
 
-  getTotalVehicles(): number {
-    return this.chartData.vehicleClass.reduce((sum: number, item: any) => sum + item.value, 0);
+  getBarHeight(count: number): number {
+    const maxCount = Math.max(...this.chartData.monthlyTrends.map((item: any) => item.count));
+    return Math.max((count / maxCount) * 100, 8); // Minimum 8% height for visibility
   }
 
-  getTotalReasons(): number {
-    return this.chartData.flaggingReasons.reduce((sum: number, item: any) => sum + item.value, 0);
+  getYAxisTicks(): number[] {
+    const maxCount = Math.max(...this.chartData.monthlyTrends.map((item: any) => item.count));
+    const step = Math.ceil(maxCount / 4); // Use 4 steps instead of 5 for better scaling
+    return Array.from({ length: 5 }, (_, i) => i * step);
   }
 
-  getVehicleSegments(): any[] {
-    const total = this.getTotalVehicles();
+  getTotalAccountTypes(): number {
+    return this.chartData.accountTypes.reduce((sum: number, item: any) => sum + item.value, 0);
+  }
+
+  getAccountTypeSegments(): any[] {
+    const total = this.getTotalAccountTypes();
     if (total === 0) return [];
 
     let offset = 0;
-    return this.chartData.vehicleClass.map((item: any) => {
-      const percentage = item.value / total;
-      const circumference = percentage * 503; // 2 * π * 80
-      const segment = {
-        circumference,
-        offset
-      };
-      offset -= circumference;
-      return segment;
-    });
-  }
-
-  getReasonSegments(): any[] {
-    const total = this.getTotalReasons();
-    if (total === 0) return [];
-
-    let offset = 0;
-    return this.chartData.flaggingReasons.map((item: any) => {
+    return this.chartData.accountTypes.map((item: any) => {
       const percentage = item.value / total;
       const circumference = percentage * 503; // 2 * π * 80
       const segment = {
