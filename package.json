@@ -4,7 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --base-href /"
+    "build": "ng build --base-href /",
+    "install": "npm install"
   },
   "dependencies": {
     "@angular/animations": "^20.0.0",
